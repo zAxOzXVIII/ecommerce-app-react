@@ -1,27 +1,34 @@
-import { View, FlatList, useWindowDimensions } from "react-native"
-import products from '../assets/products.json';
+import { ActivityIndicator, FlatList, Text} from "react-native"
 import ProductListItem from '../components/ProductListItem';
 import { useBreakpointValue } from '../components/ui/utils/use-break-point-value';
-import { useEffect } from "react";
-import { listProducts } from "../api/products";
+import { useEffect, useState } from "react";
+import { listProducts } from "@/api/products";
+import { useQuery } from '@tanstack/react-query';
 
 
 export default function HomeScreen(){
-    // const {width} = useWindowDimensions();
-    // const numColumns = width > 700 ? 3 : 2;
-    // console.log("re-render");
-    useEffect(()=>{
-        listProducts();
-    }, []);
-
+    const { data, isLoading, error } = useQuery({
+        queryKey: ['products'], 
+        queryFn: listProducts,
+    });
 
     const numColumns = useBreakpointValue({
         default : 2,
         sm: 3,
         xl: 4,
     });
+
+    if (isLoading){
+        return <ActivityIndicator  />;
+    }
+
+    if (error){
+        return <Text>Error fetching products</Text>
+    }
+
     return (
-            <FlatList data={products} 
+            <FlatList 
+            data={data} 
             key={numColumns}
             numColumns={numColumns} 
             className=""

@@ -1,6 +1,6 @@
 
 import { useLocalSearchParams, Stack } from 'expo-router';
-import products from '@/assets/products.json';
+import {ActivityIndicator} from 'react-native';
 
 import { Box } from "../../components/ui/box";
 import { Button, ButtonText } from "../../components/ui/button";
@@ -9,20 +9,35 @@ import { Heading } from "../../components/ui/heading";
 import { Image } from "../../components/ui/image";
 import { Text } from "../../components/ui/text";
 import { VStack } from "../../components/ui/vstack";
+import { useQuery } from '@tanstack/react-query';
+import { fetchProductById } from '@/api/products';
 
 
 export default function ProductDetailsScreen() {
     const { id } = useLocalSearchParams<{ id: string }>();
 
-    const product = products.find((p) => p.id === Number(id));
+    const { 
+        data: product, 
+        isLoading, 
+        error } = useQuery({
+        queryKey: ['products', id],
+        queryFn: () => fetchProductById(Number(id)),
+    });
 
-    if (!product) {
-        return <Text>Product not found</Text>
+    if (isLoading) {
+        return <ActivityIndicator />;
     }
+
+    if (error) {
+        return <Text>Product not found!</Text>
+    }
+
+    // const product = products.find((p) => p.id === Number(id));
+
 
     return (
         <Box className='bg-gray-300 p-3 flex-1 items-center'>
-            <Stack.Screen name='index' options={{title : product.name}} />
+            <Stack.Screen name='index' options={{ title: product.name }} />
             <Card className="p-5 rounded-lg mx-auto max-w-[960px] m-3 flex-1">
 
                 <Image
